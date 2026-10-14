@@ -1,0 +1,125 @@
+
+import { useState, useEffect } from "react";
+
+function App() {
+  const [name, setName] = useState("");
+  const [students, setStudents] = useState(() => {
+    const savedStudents = localStorage.getItem("students");
+    return savedStudents ? JSON.parse(savedStudents) : [];
+  });
+
+  const [search, setSearch] = useState("");
+  const [editIndex, setEditIndex] = useState(null);
+
+ 
+  useEffect(() => {
+    localStorage.setItem("students", JSON.stringify(students));
+  }, [students]);
+
+  
+  function handleSubmit() {
+    const trimmedName = name.trim();
+
+    if (!trimmedName) return;
+
+    if (editIndex !== null) {
+      const updatedStudents = [...students];
+      updatedStudents[editIndex] = trimmedName;
+      setStudents(updatedStudents);
+      setEditIndex(null);
+    } else {
+      setStudents([...students, trimmedName]);
+    }
+
+    setName("");
+  }
+
+
+  function editStudent(index) {
+    setName(students[index]);
+    setEditIndex(index);
+  }
+
+  
+  function deleteStudent(index) {
+    setStudents(students.filter((_, i) => i !== index));
+
+    if (editIndex === index) {
+      setName("");
+      setEditIndex(null);
+    } else if (editIndex !== null && editIndex > index) {
+      setEditIndex(editIndex - 1);
+    }
+  }
+
+ 
+  const filteredStudents = students
+    .map((student, index) => ({ student, index }))
+    .filter(({ student }) =>
+      student.toLowerCase().includes(search.toLowerCase())
+    );
+
+  return (
+    <div>
+      <h1>Student Management System</h1>
+
+      <h2>
+        {editIndex !== null ? "Edit Student" : "Add Student"}
+      </h2>
+
+      <input
+        type="text"
+        placeholder="Enter student name"
+        value={name}
+        onChange={(event) => setName(event.target.value)}
+      />
+
+      <button onClick={handleSubmit}>
+        {editIndex !== null ? "Save Changes" : "Add Student"}
+      </button>
+
+      {editIndex !== null && (
+        <button
+          onClick={() => {
+            setName("");
+            setEditIndex(null);
+          }}
+        >
+          Cancel
+        </button>
+      )}
+
+      <h2>Students ({students.length})</h2>
+
+      <input
+        type="text"
+        placeholder="Search students..."
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+      />
+
+      {filteredStudents.length === 0 ? (
+        <p>No students found.</p>
+      ) : (
+        <ul>
+          {filteredStudents.map(({ student, index }) => (
+            <li key={index} style={{ marginBottom: "10px" }}>
+              {student}{" "}
+
+              <button onClick={() => editStudent(index)}>
+                Edit
+              </button>{" "}
+
+              <button onClick={() => deleteStudent(index)}>
+                Delete
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+export default App;
+
