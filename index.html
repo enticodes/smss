@@ -3,46 +3,65 @@ import { useState, useEffect } from "react";
 
 function App() {
   const [name, setName] = useState("");
-  const [students, setStudents] = useState(() => {
-    const savedStudents = localStorage.getItem("students");
-    return savedStudents ? JSON.parse(savedStudents) : [];
-  });
-
+  const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [editIndex, setEditIndex] = useState(null);
 
- 
+  // Load students when the app starts
+  useEffect(() => {
+    const savedStudents = localStorage.getItem("students");
+
+    if (savedStudents !== null) {
+      setStudents(JSON.parse(savedStudents));
+    }
+  }, []);
+
+  // Save students whenever the list changes
   useEffect(() => {
     localStorage.setItem("students", JSON.stringify(students));
   }, [students]);
 
-  
+  // Add a new student or update an existing student
   function handleSubmit() {
-    const trimmedName = name.trim();
+    const studentName = name.trim();
 
-    if (!trimmedName) return;
+    if (studentName === "") {
+      return;
+    }
 
     if (editIndex !== null) {
-      const updatedStudents = [...students];
-      updatedStudents[editIndex] = trimmedName;
+      const updatedStudents = students.slice();
+
+      updatedStudents[editIndex] = studentName;
+
       setStudents(updatedStudents);
       setEditIndex(null);
     } else {
-      setStudents([...students, trimmedName]);
+      const updatedStudents = students.concat(studentName);
+
+      setStudents(updatedStudents);
     }
 
     setName("");
   }
 
-
+  // Put the student's name inside the input
   function editStudent(index) {
     setName(students[index]);
     setEditIndex(index);
   }
 
-  
+  // Delete a student
   function deleteStudent(index) {
-    setStudents(students.filter((_, i) => i !== index));
+    const updatedStudents = [];
+
+    for (let i = 0; i < students.length; i++) {
+      if (i !== index) {
+        updatedStudents.push(students[i]);
+      }
+    }
+
+    setStudents(updatedStudents);
 
     if (editIndex === index) {
       setName("");
@@ -52,12 +71,21 @@ function App() {
     }
   }
 
- 
-  const filteredStudents = students
-    .map((student, index) => ({ student, index }))
-    .filter(({ student }) =>
+  // Search students
+  const filteredStudents = [];
+
+  for (let i = 0; i < students.length; i++) {
+    const student = students[i];
+
+    if (
       student.toLowerCase().includes(search.toLowerCase())
-    );
+    ) {
+      filteredStudents.push({
+        name: student,
+        index: i
+      });
+    }
+  }
 
   return (
     <div>
@@ -102,15 +130,15 @@ function App() {
         <p>No students found.</p>
       ) : (
         <ul>
-          {filteredStudents.map(({ student, index }) => (
-            <li key={index} style={{ marginBottom: "10px" }}>
-              {student}{" "}
+          {filteredStudents.map((item) => (
+            <li key={item.index} style={{ marginBottom: "10px" }}>
+              {item.name}{" "}
 
-              <button onClick={() => editStudent(index)}>
+              <button onClick={() => editStudent(item.index)}>
                 Edit
               </button>{" "}
 
-              <button onClick={() => deleteStudent(index)}>
+              <button onClick={() => deleteStudent(item.index)}>
                 Delete
               </button>
             </li>
@@ -122,4 +150,3 @@ function App() {
 }
 
 export default App;
-
