@@ -7,7 +7,6 @@ function App() {
   const [search, setSearch] = useState("");
   const [editIndex, setEditIndex] = useState(null);
 
-  // Load students when the app starts
   useEffect(() => {
     const savedStudents = localStorage.getItem("students");
 
@@ -16,12 +15,10 @@ function App() {
     }
   }, []);
 
-  // Save students whenever the list changes
   useEffect(() => {
     localStorage.setItem("students", JSON.stringify(students));
   }, [students]);
 
-  // Add a new student or update an existing student
   function handleSubmit() {
     const studentName = name.trim();
 
@@ -31,27 +28,23 @@ function App() {
 
     if (editIndex !== null) {
       const updatedStudents = students.slice();
-
       updatedStudents[editIndex] = studentName;
 
       setStudents(updatedStudents);
       setEditIndex(null);
     } else {
       const updatedStudents = students.concat(studentName);
-
       setStudents(updatedStudents);
     }
 
     setName("");
   }
 
-  // Put the student's name inside the input
   function editStudent(index) {
     setName(students[index]);
     setEditIndex(index);
   }
 
-  // Delete a student
   function deleteStudent(index) {
     const updatedStudents = [];
 
@@ -71,15 +64,12 @@ function App() {
     }
   }
 
-  // Search students
   const filteredStudents = [];
 
   for (let i = 0; i < students.length; i++) {
     const student = students[i];
 
-    if (
-      student.toLowerCase().includes(search.toLowerCase())
-    ) {
+    if (student.toLowerCase().includes(search.toLowerCase())) {
       filteredStudents.push({
         name: student,
         index: i
@@ -88,65 +78,91 @@ function App() {
   }
 
   return (
-    <div>
-      <h1>Student Management System</h1>
+    <div className="bg-gray-100 p-4">
+      <div className="mx-auto max-w-lg rounded-lg bg-white p-4 shadow">
 
-      <h2>
-        {editIndex !== null ? "Edit Student" : "Add Student"}
-      </h2>
+        <h1 className="mb-4 text-2xl font-bold text-gray-800">
+          Student Management System
+        </h1>
 
-      <input
-        type="text"
-        placeholder="Enter student name"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-      />
+        <h2 className="mb-2 text-lg font-semibold">
+          {editIndex !== null ? "Edit Student" : "Add Student"}
+        </h2>
 
-      <button onClick={handleSubmit}>
-        {editIndex !== null ? "Save Changes" : "Add Student"}
-      </button>
+        <input
+          type="text"
+          placeholder="Enter student name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          className="mb-3 w-full rounded border border-gray-300 p-2"
+        />
 
-      {editIndex !== null && (
         <button
-          onClick={() => {
-            setName("");
-            setEditIndex(null);
-          }}
+          onClick={handleSubmit}
+          className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
-          Cancel
+          {editIndex !== null ? "Save Changes" : "Add Student"}
         </button>
-      )}
 
-      <h2>Students ({students.length})</h2>
+        {editIndex !== null && (
+          <button
+            onClick={() => {
+              setName("");
+              setEditIndex(null);
+            }}
+            className="ml-2 rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+          >
+            Cancel
+          </button>
+        )}
 
-      <input
-        type="text"
-        placeholder="Search students..."
-        value={search}
-        onChange={(event) => setSearch(event.target.value)}
-      />
+        <h2 className="mb-3 mt-6 text-lg font-semibold">
+          Students ({students.length})
+        </h2>
 
-      {filteredStudents.length === 0 ? (
-        <p>No students found.</p>
-      ) : (
-        <ul>
-          {filteredStudents.map((item) => (
-            <li key={item.index} style={{ marginBottom: "10px" }}>
-              {item.name}{" "}
+        <input
+          type="text"
+          placeholder="Search students..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          className="mb-4 w-full rounded border border-gray-300 p-2"
+        />
 
-              <button onClick={() => editStudent(item.index)}>
-                Edit
-              </button>{" "}
+        {filteredStudents.length === 0 ? (
+          <p className="text-gray-500">No students found.</p>
+        ) : (
+          <ul className="space-y-2">
+            {filteredStudents.map((item) => (
+              <li
+                key={item.index}
+                className="flex items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 p-3"
+              >
+                <span className="break-words">{item.name}</span>
 
-              <button onClick={() => deleteStudent(item.index)}>
-                Delete
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    onClick={() => editStudent(item.index)}
+                    className="rounded bg-yellow-500 px-3 py-1 text-white hover:bg-yellow-600"
+                  >
+                    Edit
+                  </button>
+
+                  <button
+                    onClick={() => deleteStudent(item.index)}
+                    className="rounded bg-red-600 px-3 py-1 text-white hover:bg-red-700"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+
+      </div>
     </div>
   );
 }
 
 export default App;
+
